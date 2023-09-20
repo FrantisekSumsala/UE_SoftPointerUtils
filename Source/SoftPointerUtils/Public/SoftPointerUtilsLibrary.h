@@ -21,4 +21,29 @@ class SOFTPOINTERUTILS_API USoftPointerUtilsLibrary : public UBlueprintFunctionL
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION(BlueprintPure)
+	static const FSoftObjectPath& SoftClassToSoftPath(const TSoftClassPtr<UObject>& SoftClass);
+	
+	UFUNCTION(BlueprintPure)
+	static const FSoftObjectPath& SoftObjectToSoftPath(const TSoftObjectPtr<UObject>& SoftObject);
+
+	UFUNCTION(BlueprintPure)
+	static FString SoftPathToString(const FSoftObjectPath& SoftPath);
+
+	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
+	static bool IsValidSoftClass(const TSoftClassPtr<UObject>& SoftClass);
+	
+	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
+	static bool IsValidSoftObject(const TSoftObjectPtr<UObject>& SoftObject);
+
+	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
+	static bool IsValidSoftPath(const FSoftObjectPath& SoftPath);
+	
+	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
+	static bool IsSoftClassLoaded(const TSoftClassPtr<UObject>& SoftClass);
+	
+	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
+	static bool IsSoftObjectLoaded(const TSoftObjectPtr<UObject>& SoftObject);
+
 };
