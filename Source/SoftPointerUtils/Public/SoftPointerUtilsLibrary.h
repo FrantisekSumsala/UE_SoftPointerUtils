@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Engine/AssetManager.h"
 #include "SoftPointerUtilsLibrary.generated.h"
 
 /* TODO TASK LIST
@@ -45,5 +46,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
 	static bool IsSoftObjectLoaded(const TSoftObjectPtr<UObject>& SoftObject);
-
+	
+	static TSharedPtr<FStreamableHandle> LoadAsync(const TSoftClassPtr<>& SoftClass, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
+	static TSharedPtr<FStreamableHandle> LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
+	static TSharedPtr<FStreamableHandle> LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
+	
 };

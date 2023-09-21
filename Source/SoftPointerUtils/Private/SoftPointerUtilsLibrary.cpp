@@ -41,3 +41,22 @@ bool USoftPointerUtilsLibrary::IsSoftObjectLoaded(const TSoftObjectPtr<>& SoftOb
 {
 	return SoftObject.IsValid();
 }
+
+TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TSoftClassPtr<>& SoftClass, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+{
+	return LoadAsync(SoftClass.ToSoftObjectPath(), OnLoaded, bIsHighPriority);
+}
+
+TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+{
+	return LoadAsync(SoftObject.ToSoftObjectPath(), OnLoaded, bIsHighPriority);
+}
+
+TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+{
+	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
+		return nullptr;
+	
+	const TAsyncLoadPriority loadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
+	return UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, OnLoaded, loadPriority);
+}
