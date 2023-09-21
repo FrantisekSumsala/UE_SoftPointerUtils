@@ -50,5 +50,14 @@ public:
 	static TSharedPtr<FStreamableHandle> LoadAsync(const TSoftClassPtr<>& SoftClass, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
 	static TSharedPtr<FStreamableHandle> LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
 	static TSharedPtr<FStreamableHandle> LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
+
+	UFUNCTION(BlueprintCallable)
+	static void AsyncLoadSoftClass(const TSoftClassPtr<UObject>& SoftClass);
+
+	UFUNCTION(BlueprintCallable)
+	static void AsyncLoadSoftObject(const TSoftObjectPtr<UObject>& SoftObject);
+
+	UFUNCTION(BlueprintCallable)
+	static void AsyncLoadSoftPath(const FSoftObjectPath& SoftPath);
 	
 };
