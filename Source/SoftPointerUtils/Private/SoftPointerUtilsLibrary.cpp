@@ -54,11 +54,49 @@ TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TSoftObj
 
 TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
 {
+	//TODO: reconsider whether we should do this instead of letting the streaming manager handle it
 	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
 		return nullptr;
 	
 	const TAsyncLoadPriority loadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
 	return UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, OnLoaded, loadPriority);
+}
+
+TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+{
+	const int32 NumSoftClasses = SoftClasses.Num();
+	TArray<FSoftObjectPath> SoftPaths;
+	SoftPaths.Reserve(NumSoftClasses);
+	
+	for (const TSoftClassPtr<>& SoftClass : SoftClasses)
+		SoftPaths.Add(SoftClass.ToSoftObjectPath());
+	
+	return LoadAsync(SoftPaths, OnLoaded, bIsHighPriority);
+}
+
+TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+{
+	const int32 NumSoftObjects = SoftObjects.Num();
+	TArray<FSoftObjectPath> SoftPaths;
+	SoftPaths.Reserve(NumSoftObjects);
+	
+	for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
+		SoftPaths.Add(SoftObject.ToSoftObjectPath());
+	
+	return LoadAsync(SoftPaths, OnLoaded, bIsHighPriority);
+}
+
+TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<FSoftObjectPath>& SoftPaths, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+{
+	//TODO: reconsider how we should handle this, even more so when a single invalid soft path invalidates all the other requested assets
+	for (const FSoftObjectPath& target : SoftPaths)
+	{
+		if (!ensureAlwaysMsgf(IsValidSoftPath(target), TEXT("Cannot load an invalid soft path!")))
+			return nullptr;
+	}
+	
+	const TAsyncLoadPriority loadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
+	return UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPaths, OnLoaded, loadPriority);
 }
 
 void USoftPointerUtilsLibrary::AsyncLoadSoftClass(const TSoftClassPtr<>& SoftClass)

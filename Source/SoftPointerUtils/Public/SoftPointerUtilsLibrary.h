@@ -51,6 +51,12 @@ public:
 	static TSharedPtr<FStreamableHandle> LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
 	static TSharedPtr<FStreamableHandle> LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
 
+	static TSharedPtr<FStreamableHandle> LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
+	static TSharedPtr<FStreamableHandle> LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
+	static TSharedPtr<FStreamableHandle> LoadAsync(const TArray<FSoftObjectPath>& SoftPaths, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
+	//TODO: test the batched variant for c++, test if the request object is working, make it usable in blueprints,
+	//      change the API so that they are created on demand, handle blueprint callbacks
+
 	UFUNCTION(BlueprintCallable)
 	static void AsyncLoadSoftClass(const TSoftClassPtr<UObject>& SoftClass);
 
