@@ -1,6 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SPU_SoftPointerUtilsLibrary.h"
+#include "SPU_AsyncLoadHandle.h"
+#include "Engine/AssetManager.h"
 
 const FSoftObjectPath& USPU_SoftPointerUtilsLibrary::SoftClassToSoftPath(const TSoftClassPtr<>& SoftClass)
 {
@@ -42,78 +44,134 @@ bool USPU_SoftPointerUtilsLibrary::IsSoftObjectLoaded(const TSoftObjectPtr<>& So
 	return SoftObject.IsValid();
 }
 
-TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TSoftClassPtr<>& SoftClass, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+void USPU_SoftPointerUtilsLibrary::LoadAsync(const TSoftClassPtr<>& SoftClass, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
-	return LoadAsync(SoftClass.ToSoftObjectPath(), OnLoaded, bIsHighPriority);
+	return LoadAsync(SoftClass.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
 }
 
-TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+void USPU_SoftPointerUtilsLibrary::LoadAsync(const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
-	return LoadAsync(SoftObject.ToSoftObjectPath(), OnLoaded, bIsHighPriority);
+	return LoadAsync(SoftObject.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
 }
 
-TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
-{
-	//TODO: reconsider whether we should do this instead of letting the streaming manager handle it
-	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
-		return nullptr;
-	
-	const TAsyncLoadPriority loadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
-	return UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, OnLoaded, loadPriority);
-}
-
-TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
-{
-	const int32 NumSoftClasses = SoftClasses.Num();
-	TArray<FSoftObjectPath> SoftPaths;
-	SoftPaths.Reserve(NumSoftClasses);
-	
-	for (const TSoftClassPtr<>& SoftClass : SoftClasses)
-		SoftPaths.Add(SoftClass.ToSoftObjectPath());
-	
-	return LoadAsync(SoftPaths, OnLoaded, bIsHighPriority);
-}
-
-TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
-{
-	const int32 NumSoftObjects = SoftObjects.Num();
-	TArray<FSoftObjectPath> SoftPaths;
-	SoftPaths.Reserve(NumSoftObjects);
-	
-	for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
-		SoftPaths.Add(SoftObject.ToSoftObjectPath());
-	
-	return LoadAsync(SoftPaths, OnLoaded, bIsHighPriority);
-}
-
-TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<FSoftObjectPath>& SoftPaths, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
-{
-	//TODO: reconsider how we should handle this, even more so when a single invalid soft path invalidates all the other requested assets
-	for (const FSoftObjectPath& target : SoftPaths)
-	{
-		if (!ensureAlwaysMsgf(IsValidSoftPath(target), TEXT("Cannot load an invalid soft path!")))
-			return nullptr;
-	}
-	
-	const TAsyncLoadPriority loadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
-	return UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPaths, OnLoaded, loadPriority);
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadSoftClass(const TSoftClassPtr<>& SoftClass)
-{
-	AsyncLoadSoftPath(SoftClass.ToSoftObjectPath());
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadSoftObject(const TSoftObjectPtr<>& SoftObject)
-{
-	AsyncLoadSoftPath(SoftObject.ToSoftObjectPath());
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadSoftPath(const FSoftObjectPath& SoftPath)
+void USPU_SoftPointerUtilsLibrary::LoadAsync(const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
 		return;
 	
-	// const TAsyncLoadPriority loadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
-	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath);
+	const TAsyncLoadPriority LoadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, MoveTemp(OnLoaded), LoadPriority, false, false, MoveTemp(DebugName));
+}
+
+void USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	const int32 NumSoftClasses = SoftClasses.Num();
+	TArray<FSoftObjectPath> SoftPaths;
+	SoftPaths.Reserve(NumSoftClasses);
+	for (const TSoftClassPtr<>& SoftClass : SoftClasses)
+		SoftPaths.Add(SoftClass.ToSoftObjectPath());
+	
+	return LoadAsync(MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+}
+
+void USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	const int32 NumSoftObjects = SoftObjects.Num();
+	TArray<FSoftObjectPath> SoftPaths;
+	SoftPaths.Reserve(NumSoftObjects);
+	for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
+		SoftPaths.Add(SoftObject.ToSoftObjectPath());
+	
+	return LoadAsync(MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+}
+
+void USPU_SoftPointerUtilsLibrary::LoadAsync(TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	bool ContainsValidPath = false;
+	for (const FSoftObjectPath& SoftPath : SoftPaths)
+	{
+		if (IsValidSoftPath(SoftPath))
+			ContainsValidPath = true;
+	}
+
+	if (!ensureAlwaysMsgf(ContainsValidPath, TEXT("Cannot load only invalid soft paths!")))
+		return;
+	
+	const TAsyncLoadPriority LoadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(MoveTemp(SoftPaths), MoveTemp(OnLoaded), LoadPriority, false, false, MoveTemp(DebugName));
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, const TSoftClassPtr<>& SoftClass, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return LoadAsyncWithHandle(Outer, SoftClass.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return LoadAsyncWithHandle(Outer, SoftObject.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
+		return nullptr;
+	
+	const TAsyncLoadPriority LoadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
+	const TSharedPtr<FStreamableHandle> StreamableHandle = UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, MoveTemp(OnLoaded), LoadPriority, false, false, MoveTemp(DebugName));
+	if (!StreamableHandle)
+		return nullptr;
+
+	USPU_AsyncLoadHandle* LoadHandle = NewObject<USPU_AsyncLoadHandle>(Outer);
+	if (!LoadHandle)
+		return nullptr;
+
+	LoadHandle->Initialize(StreamableHandle);
+	return LoadHandle;
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	const int32 NumSoftClasses = SoftClasses.Num();
+	TArray<FSoftObjectPath> SoftPaths;
+	SoftPaths.Reserve(NumSoftClasses);
+	for (const TSoftClassPtr<>& SoftClass : SoftClasses)
+		SoftPaths.Add(SoftClass.ToSoftObjectPath());
+	
+	return LoadAsyncWithHandle(Outer, MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	const int32 NumSoftObjects = SoftObjects.Num();
+	TArray<FSoftObjectPath> SoftPaths;
+	SoftPaths.Reserve(NumSoftObjects);
+	for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
+		SoftPaths.Add(SoftObject.ToSoftObjectPath());
+	
+	return LoadAsyncWithHandle(Outer, MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	bool ContainsValidPath = false;
+	for (const FSoftObjectPath& SoftPath : SoftPaths)
+	{
+		if (IsValidSoftPath(SoftPath))
+			ContainsValidPath = true;
+	}
+
+	if (!ensureAlwaysMsgf(ContainsValidPath, TEXT("Cannot load only invalid soft paths!")))
+		return nullptr;
+	
+	const TAsyncLoadPriority LoadPriority = bIsHighPriority ? FStreamableManager::AsyncLoadHighPriority : FStreamableManager::DefaultAsyncLoadPriority;
+	const TSharedPtr<FStreamableHandle> StreamableHandle = UAssetManager::GetStreamableManager().RequestAsyncLoad(MoveTemp(SoftPaths), MoveTemp(OnLoaded), LoadPriority, false, false, MoveTemp(DebugName));
+	if (!StreamableHandle)
+		return nullptr;
+
+	USPU_AsyncLoadHandle* LoadHandle = NewObject<USPU_AsyncLoadHandle>(Outer);
+	if (!LoadHandle)
+		return nullptr;
+
+	LoadHandle->Initialize(StreamableHandle);
+	return LoadHandle;
 }

@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "Engine/AssetManager.h"
 #include "SPU_SoftPointerUtilsLibrary.generated.h"
 
 /* TODO TASK LIST
- * 1) Implement the necessary C++ functionality - IsValid, IsLoaded, LoadSync, LoadAsync (with support for arrays)
- * 2) Figure out if there is any additional functionality we might want for C++
- * 3) Research what support blueprints have for soft pointers, what is missing and what to make blueprint usable
- * 4) Research the possibility of creating a custom wrapper for the async load handle with streamlined API, possibly with a variant for blueprints
- * 5) Once this is feature complete, clean it up, apply UE coding standards and create proper documentation
- * 6) Fill out the copyright, readme, validate the entire content of the plugin
- * 7) Research what needs to be done to publish this on the UE marketplace
+ * Try to make this fully usable in blueprints (probably requires creating custom UK2_Node-s)
+ * Once this is feature complete, clean it up, apply UE coding standards and create proper documentation
+ * Fill out the copyright, readme, validate the entire content of the plugin
+ * Research what needs to be done to publish this on the UE marketplace
  */
+
+class USPU_AsyncLoadHandle;
+
+DECLARE_DELEGATE(FSPU_AsyncLoadDelegate);
 
 UCLASS()
 class SOFTPOINTERUTILS_API USPU_SoftPointerUtilsLibrary : public UBlueprintFunctionLibrary
@@ -46,24 +46,21 @@ public:
 	
 	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
 	static bool IsSoftObjectLoaded(const TSoftObjectPtr<UObject>& SoftObject);
+
+	static void LoadAsync(const TSoftClassPtr<>& SoftClass, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
+	static void LoadAsync(const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
+	static void LoadAsync(const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
+
+	static void LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
+	static void LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
+	static void LoadAsync(TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
 	
-	static TSharedPtr<FStreamableHandle> LoadAsync(const TSoftClassPtr<>& SoftClass, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
-	static TSharedPtr<FStreamableHandle> LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
-	static TSharedPtr<FStreamableHandle> LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
-
-	static TSharedPtr<FStreamableHandle> LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
-	static TSharedPtr<FStreamableHandle> LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
-	static TSharedPtr<FStreamableHandle> LoadAsync(const TArray<FSoftObjectPath>& SoftPaths, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority = false);
-	//TODO: test the batched variant for c++, test if the request object is working, make it usable in blueprints,
-	//      change the API so that they are created on demand, handle blueprint callbacks
-
-	UFUNCTION(BlueprintCallable)
-	static void AsyncLoadSoftClass(const TSoftClassPtr<UObject>& SoftClass);
-
-	UFUNCTION(BlueprintCallable)
-	static void AsyncLoadSoftObject(const TSoftObjectPtr<UObject>& SoftObject);
-
-	UFUNCTION(BlueprintCallable)
-	static void AsyncLoadSoftPath(const FSoftObjectPath& SoftPath);
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TSoftClassPtr<>& SoftClass, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
+	
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
 	
 };

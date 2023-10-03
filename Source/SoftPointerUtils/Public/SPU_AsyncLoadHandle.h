@@ -18,23 +18,23 @@ enum class ESPU_AsyncLoadStatus : uint8
 	Active
 };
 
-DECLARE_DYNAMIC_DELEGATE(FAsyncLoadDelegate);
+DECLARE_DYNAMIC_DELEGATE(FSPU_AsyncLoadHandleDelegate);
 
-UCLASS(BlueprintType)
-class SOFTPOINTERUTILS_API USPU_AsyncLoadHandle : public UObject
+UCLASS(BlueprintType, NotBlueprintable)
+class SOFTPOINTERUTILS_API USPU_AsyncLoadHandle final : public UObject
 {
 	GENERATED_BODY()
 
 	friend class USPU_SoftPointerUtilsLibrary;
 	
 private:
-	TSharedPtr<FStreamableHandle> LoadHandle;
+	TSharedPtr<FStreamableHandle> StreamableHandle;
 
 	UPROPERTY()
-	FAsyncLoadDelegate OnCompleteDelegate;
+	FSPU_AsyncLoadHandleDelegate OnCompleteDelegate;
 
 	UPROPERTY()
-	FAsyncLoadDelegate OnCancelDelegate;
+	FSPU_AsyncLoadHandleDelegate OnCancelDelegate;
 
 public:
 	UFUNCTION(BlueprintPure)
@@ -45,11 +45,11 @@ public:
 	// GetProgress
 	
 	UFUNCTION(BlueprintCallable)
-	bool BindOnCompleteDelegate(const FAsyncLoadDelegate& Delegate);
+	bool BindOnCompleteDelegate(const FSPU_AsyncLoadHandleDelegate& Delegate);
 	// BindCompleteDelegate
 
 	UFUNCTION(BlueprintCallable)
-	bool BindOnCancelDelegate(const FAsyncLoadDelegate& Delegate);
+	bool BindOnCancelDelegate(const FSPU_AsyncLoadHandleDelegate& Delegate);
 	// BindCancelDelegate
 	
 	UFUNCTION(BlueprintCallable)

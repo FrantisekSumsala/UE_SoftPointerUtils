@@ -5,16 +5,16 @@
 
 ESPU_AsyncLoadStatus USPU_AsyncLoadHandle::GetStatus() const
 {
-	if (LoadHandle->WasCanceled())
+	if (StreamableHandle->WasCanceled())
 		return ESPU_AsyncLoadStatus::Canceled;
 	
-	if (LoadHandle->HasLoadCompleted())
+	if (StreamableHandle->HasLoadCompleted())
 		return ESPU_AsyncLoadStatus::Completed;
 	
-	if (LoadHandle->IsStalled())
+	if (StreamableHandle->IsStalled())
 		return ESPU_AsyncLoadStatus::Stalled;
 	
-	if (LoadHandle->IsLoadingInProgress())
+	if (StreamableHandle->IsLoadingInProgress())
 		return ESPU_AsyncLoadStatus::InProgress;
 	
 	return ESPU_AsyncLoadStatus::Active;
@@ -22,39 +22,39 @@ ESPU_AsyncLoadStatus USPU_AsyncLoadHandle::GetStatus() const
 
 float USPU_AsyncLoadHandle::GetProgress() const
 {
-	return LoadHandle->GetProgress();
+	return StreamableHandle->GetProgress();
 }
 
-bool USPU_AsyncLoadHandle::BindOnCompleteDelegate(const FAsyncLoadDelegate& Delegate)
+bool USPU_AsyncLoadHandle::BindOnCompleteDelegate(const FSPU_AsyncLoadHandleDelegate& Delegate)
 {
 	OnCompleteDelegate = Delegate;
-	return LoadHandle->BindCompleteDelegate(FStreamableDelegate::CreateUObject(this, &USPU_AsyncLoadHandle::OnComplete));
+	return StreamableHandle->BindCompleteDelegate(FStreamableDelegate::CreateUObject(this, &USPU_AsyncLoadHandle::OnComplete));
 }
 
-bool USPU_AsyncLoadHandle::BindOnCancelDelegate(const FAsyncLoadDelegate& Delegate)
+bool USPU_AsyncLoadHandle::BindOnCancelDelegate(const FSPU_AsyncLoadHandleDelegate& Delegate)
 {
 	OnCancelDelegate = Delegate;
-	return LoadHandle->BindCancelDelegate(FStreamableDelegate::CreateUObject(this, &USPU_AsyncLoadHandle::OnCancel));
+	return StreamableHandle->BindCancelDelegate(FStreamableDelegate::CreateUObject(this, &USPU_AsyncLoadHandle::OnCancel));
 }
 
 void USPU_AsyncLoadHandle::ForceLoad(const float Timeout, const bool bStartStalledHandles) const
 {
-	LoadHandle->WaitUntilComplete(Timeout, bStartStalledHandles);
+	StreamableHandle->WaitUntilComplete(Timeout, bStartStalledHandles);
 }
 
 void USPU_AsyncLoadHandle::CancelLoadRequest() const
 {
-	LoadHandle->CancelHandle();
+	StreamableHandle->CancelHandle();
 }
 
 TSharedPtr<FStreamableHandle> USPU_AsyncLoadHandle::GetLoadHandle() const
 {
-	return LoadHandle;
+	return StreamableHandle;
 }
 
 void USPU_AsyncLoadHandle::Initialize(TSharedPtr<FStreamableHandle> InWrappedHandle)
 {
-	LoadHandle = InWrappedHandle;
+	StreamableHandle = InWrappedHandle;
 }
 
 void USPU_AsyncLoadHandle::OnComplete()
