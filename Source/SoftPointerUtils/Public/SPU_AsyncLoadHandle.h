@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "AsyncLoadRequest.generated.h"
+#include "SPU_AsyncLoadHandle.generated.h"
 
 struct FStreamableHandle;
 
 UENUM(BlueprintType)
-enum class EAsyncLoadRequestStatus : uint8
+enum class ESPU_AsyncLoadStatus : uint8
 {
 	InProgress,
 	Stalled,
@@ -21,11 +21,11 @@ enum class EAsyncLoadRequestStatus : uint8
 DECLARE_DYNAMIC_DELEGATE(FAsyncLoadDelegate);
 
 UCLASS(BlueprintType)
-class SOFTPOINTERUTILS_API UAsyncLoadRequest : public UObject
+class SOFTPOINTERUTILS_API USPU_AsyncLoadHandle : public UObject
 {
 	GENERATED_BODY()
 
-	friend class USoftPointerUtilsLibrary;
+	friend class USPU_SoftPointerUtilsLibrary;
 	
 private:
 	TSharedPtr<FStreamableHandle> LoadHandle;
@@ -38,7 +38,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintPure)
-	EAsyncLoadRequestStatus GetStatus() const;
+	ESPU_AsyncLoadStatus GetStatus() const;
 
 	UFUNCTION(BlueprintPure)
 	float GetProgress() const;

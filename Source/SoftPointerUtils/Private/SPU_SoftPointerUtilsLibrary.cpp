@@ -1,58 +1,58 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "SoftPointerUtilsLibrary.h"
+#include "SPU_SoftPointerUtilsLibrary.h"
 
-const FSoftObjectPath& USoftPointerUtilsLibrary::SoftClassToSoftPath(const TSoftClassPtr<>& SoftClass)
+const FSoftObjectPath& USPU_SoftPointerUtilsLibrary::SoftClassToSoftPath(const TSoftClassPtr<>& SoftClass)
 {
 	return SoftClass.ToSoftObjectPath();
 }
 
-const FSoftObjectPath& USoftPointerUtilsLibrary::SoftObjectToSoftPath(const TSoftObjectPtr<>& SoftObject)
+const FSoftObjectPath& USPU_SoftPointerUtilsLibrary::SoftObjectToSoftPath(const TSoftObjectPtr<>& SoftObject)
 {
 	return SoftObject.ToSoftObjectPath();
 }
 
-FString USoftPointerUtilsLibrary::SoftPathToString(const FSoftObjectPath& SoftPath)
+FString USPU_SoftPointerUtilsLibrary::SoftPathToString(const FSoftObjectPath& SoftPath)
 {
 	return SoftPath.ToString();
 }
 
-bool USoftPointerUtilsLibrary::IsValidSoftClass(const TSoftClassPtr<>& SoftClass)
+bool USPU_SoftPointerUtilsLibrary::IsValidSoftClass(const TSoftClassPtr<>& SoftClass)
 {
 	return !SoftClass.IsNull();
 }
 
-bool USoftPointerUtilsLibrary::IsValidSoftObject(const TSoftObjectPtr<>& SoftObject)
+bool USPU_SoftPointerUtilsLibrary::IsValidSoftObject(const TSoftObjectPtr<>& SoftObject)
 {
 	return !SoftObject.IsNull();
 }
 
-bool USoftPointerUtilsLibrary::IsValidSoftPath(const FSoftObjectPath& SoftPath)
+bool USPU_SoftPointerUtilsLibrary::IsValidSoftPath(const FSoftObjectPath& SoftPath)
 {
 	return !SoftPath.IsNull();
 }
 
-bool USoftPointerUtilsLibrary::IsSoftClassLoaded(const TSoftClassPtr<>& SoftClass)
+bool USPU_SoftPointerUtilsLibrary::IsSoftClassLoaded(const TSoftClassPtr<>& SoftClass)
 {
 	return SoftClass.IsValid();
 }
 
-bool USoftPointerUtilsLibrary::IsSoftObjectLoaded(const TSoftObjectPtr<>& SoftObject)
+bool USPU_SoftPointerUtilsLibrary::IsSoftObjectLoaded(const TSoftObjectPtr<>& SoftObject)
 {
 	return SoftObject.IsValid();
 }
 
-TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TSoftClassPtr<>& SoftClass, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TSoftClassPtr<>& SoftClass, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
 {
 	return LoadAsync(SoftClass.ToSoftObjectPath(), OnLoaded, bIsHighPriority);
 }
 
-TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TSoftObjectPtr<>& SoftObject, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
 {
 	return LoadAsync(SoftObject.ToSoftObjectPath(), OnLoaded, bIsHighPriority);
 }
 
-TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const FSoftObjectPath& SoftPath, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
 {
 	//TODO: reconsider whether we should do this instead of letting the streaming manager handle it
 	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
@@ -62,7 +62,7 @@ TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const FSoftObj
 	return UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, OnLoaded, loadPriority);
 }
 
-TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
 {
 	const int32 NumSoftClasses = SoftClasses.Num();
 	TArray<FSoftObjectPath> SoftPaths;
@@ -74,7 +74,7 @@ TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<T
 	return LoadAsync(SoftPaths, OnLoaded, bIsHighPriority);
 }
 
-TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
 {
 	const int32 NumSoftObjects = SoftObjects.Num();
 	TArray<FSoftObjectPath> SoftPaths;
@@ -86,7 +86,7 @@ TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<T
 	return LoadAsync(SoftPaths, OnLoaded, bIsHighPriority);
 }
 
-TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<FSoftObjectPath>& SoftPaths, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
+TSharedPtr<FStreamableHandle> USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<FSoftObjectPath>& SoftPaths, const FStreamableDelegate& OnLoaded, const bool bIsHighPriority)
 {
 	//TODO: reconsider how we should handle this, even more so when a single invalid soft path invalidates all the other requested assets
 	for (const FSoftObjectPath& target : SoftPaths)
@@ -99,17 +99,17 @@ TSharedPtr<FStreamableHandle> USoftPointerUtilsLibrary::LoadAsync(const TArray<F
 	return UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPaths, OnLoaded, loadPriority);
 }
 
-void USoftPointerUtilsLibrary::AsyncLoadSoftClass(const TSoftClassPtr<>& SoftClass)
+void USPU_SoftPointerUtilsLibrary::AsyncLoadSoftClass(const TSoftClassPtr<>& SoftClass)
 {
 	AsyncLoadSoftPath(SoftClass.ToSoftObjectPath());
 }
 
-void USoftPointerUtilsLibrary::AsyncLoadSoftObject(const TSoftObjectPtr<>& SoftObject)
+void USPU_SoftPointerUtilsLibrary::AsyncLoadSoftObject(const TSoftObjectPtr<>& SoftObject)
 {
 	AsyncLoadSoftPath(SoftObject.ToSoftObjectPath());
 }
 
-void USoftPointerUtilsLibrary::AsyncLoadSoftPath(const FSoftObjectPath& SoftPath)
+void USPU_SoftPointerUtilsLibrary::AsyncLoadSoftPath(const FSoftObjectPath& SoftPath)
 {
 	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
 		return;

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Engine/AssetManager.h"
-#include "SoftPointerUtilsLibrary.generated.h"
+#include "SPU_SoftPointerUtilsLibrary.generated.h"
 
 /* TODO TASK LIST
  * 1) Implement the necessary C++ functionality - IsValid, IsLoaded, LoadSync, LoadAsync (with support for arrays)
@@ -18,7 +18,7 @@
  */
 
 UCLASS()
-class SOFTPOINTERUTILS_API USoftPointerUtilsLibrary : public UBlueprintFunctionLibrary
+class SOFTPOINTERUTILS_API USPU_SoftPointerUtilsLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
