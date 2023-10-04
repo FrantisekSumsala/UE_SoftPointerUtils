@@ -8,6 +8,7 @@
 
 /* TODO TASK LIST
  * Try to make this fully usable in blueprints (probably requires creating custom UK2_Node-s)
+ * Find a free plugin with heavy assets to properly stress test the async loads
  * Once this is feature complete, clean it up, apply UE coding standards and create proper documentation
  * Fill out the copyright, readme, validate the entire content of the plugin
  * Research what needs to be done to publish this on the UE marketplace
