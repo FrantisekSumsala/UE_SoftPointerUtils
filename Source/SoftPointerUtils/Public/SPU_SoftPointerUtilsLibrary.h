@@ -51,16 +51,68 @@ public:
 	static void LoadAsync(const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
 	static void LoadAsync(const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
 
-	static void LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
-	static void LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
+	template<typename ClassType>
+	static void LoadAsync(const TArray<TSoftClassPtr<ClassType>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"))
+	{
+		static_assert(TIsDerivedFrom<ClassType, UObject>::Value, "Soft class pointers must inherit from UObject!");
+	
+		const int32 NumSoftClasses = SoftClasses.Num();
+		TArray<FSoftObjectPath> SoftPaths;
+		SoftPaths.Reserve(NumSoftClasses);
+		for (const TSoftClassPtr<>& SoftClass : SoftClasses)
+			SoftPaths.Add(SoftClass.ToSoftObjectPath());
+	
+		return LoadAsync(MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+	}
+
+	template<typename ObjectType>
+	static void LoadAsync(const TArray<TSoftObjectPtr<ObjectType>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"))
+	{
+		static_assert(TIsDerivedFrom<ObjectType, UObject>::Value, "Soft object pointers must inherit from UObject!");
+
+		const int32 NumSoftObjects = SoftObjects.Num();
+		TArray<FSoftObjectPath> SoftPaths;
+		SoftPaths.Reserve(NumSoftObjects);
+		for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
+			SoftPaths.Add(SoftObject.ToSoftObjectPath());
+	
+		return LoadAsync(MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+	}
+	
 	static void LoadAsync(TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
 	
 	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TSoftClassPtr<>& SoftClass, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
 	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
 	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("SingleDelegate"));
+
+	template<typename ClassType>
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftClassPtr<ClassType>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"))
+	{
+		static_assert(TIsDerivedFrom<ClassType, UObject>::Value, "Soft class pointers must inherit from UObject!");
+		
+		const int32 NumSoftClasses = SoftClasses.Num();
+		TArray<FSoftObjectPath> SoftPaths;
+		SoftPaths.Reserve(NumSoftClasses);
+		for (const TSoftClassPtr<>& SoftClass : SoftClasses)
+			SoftPaths.Add(SoftClass.ToSoftObjectPath());
 	
-	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
-	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
+		return LoadAsyncWithHandle(Outer, MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+	}
+
+	template<typename ObjectType>
+	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftObjectPtr<ObjectType>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"))
+	{
+		static_assert(TIsDerivedFrom<ObjectType, UObject>::Value, "Soft object pointers must inherit from UObject!");
+
+		const int32 NumSoftObjects = SoftObjects.Num();
+		TArray<FSoftObjectPath> SoftPaths;
+		SoftPaths.Reserve(NumSoftObjects);
+		for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
+			SoftPaths.Add(SoftObject.ToSoftObjectPath());
+	
+		return LoadAsyncWithHandle(Outer, MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
+	}
+	
 	static USPU_AsyncLoadHandle* LoadAsyncWithHandle(UObject* Outer, TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority = false, FString DebugName = TEXT("ArrayDelegate"));
 	
 };

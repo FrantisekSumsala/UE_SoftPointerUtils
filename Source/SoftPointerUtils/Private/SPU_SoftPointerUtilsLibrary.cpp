@@ -63,28 +63,6 @@ void USPU_SoftPointerUtilsLibrary::LoadAsync(const FSoftObjectPath& SoftPath, FS
 	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, MoveTemp(OnLoaded), LoadPriority, false, false, MoveTemp(DebugName));
 }
 
-void USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	const int32 NumSoftClasses = SoftClasses.Num();
-	TArray<FSoftObjectPath> SoftPaths;
-	SoftPaths.Reserve(NumSoftClasses);
-	for (const TSoftClassPtr<>& SoftClass : SoftClasses)
-		SoftPaths.Add(SoftClass.ToSoftObjectPath());
-	
-	return LoadAsync(MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
-}
-
-void USPU_SoftPointerUtilsLibrary::LoadAsync(const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	const int32 NumSoftObjects = SoftObjects.Num();
-	TArray<FSoftObjectPath> SoftPaths;
-	SoftPaths.Reserve(NumSoftObjects);
-	for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
-		SoftPaths.Add(SoftObject.ToSoftObjectPath());
-	
-	return LoadAsync(MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
-}
-
 void USPU_SoftPointerUtilsLibrary::LoadAsync(TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	bool ContainsValidPath = false;
@@ -127,28 +105,6 @@ USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject*
 
 	LoadHandle->Initialize(StreamableHandle);
 	return LoadHandle;
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	const int32 NumSoftClasses = SoftClasses.Num();
-	TArray<FSoftObjectPath> SoftPaths;
-	SoftPaths.Reserve(NumSoftClasses);
-	for (const TSoftClassPtr<>& SoftClass : SoftClasses)
-		SoftPaths.Add(SoftClass.ToSoftObjectPath());
-	
-	return LoadAsyncWithHandle(Outer, MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	const int32 NumSoftObjects = SoftObjects.Num();
-	TArray<FSoftObjectPath> SoftPaths;
-	SoftPaths.Reserve(NumSoftObjects);
-	for (const TSoftObjectPtr<>& SoftObject : SoftObjects)
-		SoftPaths.Add(SoftObject.ToSoftObjectPath());
-	
-	return LoadAsyncWithHandle(Outer, MoveTemp(SoftPaths), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
 }
 
 USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::LoadAsyncWithHandle(UObject* Outer, TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
