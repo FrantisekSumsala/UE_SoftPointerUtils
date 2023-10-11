@@ -20,7 +20,7 @@ enum class ESPU_AsyncLoadStatus : uint8
 
 DECLARE_DYNAMIC_DELEGATE(FSPU_AsyncLoadHandleDelegate);
 
-UCLASS(BlueprintType, NotBlueprintable)
+UCLASS(BlueprintType)
 class SOFTPOINTERUTILS_API USPU_AsyncLoadHandle final : public UObject
 {
 	GENERATED_BODY()
