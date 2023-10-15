@@ -37,9 +37,9 @@ bool USPU_AsyncLoadHandle::BindOnCancelDelegate(const FSPU_AsyncLoadHandleDelega
 	return StreamableHandle->BindCancelDelegate(FStreamableDelegate::CreateUObject(this, &USPU_AsyncLoadHandle::OnCancel));
 }
 
-void USPU_AsyncLoadHandle::ForceLoad(const float Timeout, const bool bStartStalledHandles) const
+void USPU_AsyncLoadHandle::ForceLoad(const float Timeout) const
 {
-	StreamableHandle->WaitUntilComplete(Timeout, bStartStalledHandles);
+	StreamableHandle->WaitUntilComplete(Timeout);
 }
 
 void USPU_AsyncLoadHandle::CancelLoadRequest() const

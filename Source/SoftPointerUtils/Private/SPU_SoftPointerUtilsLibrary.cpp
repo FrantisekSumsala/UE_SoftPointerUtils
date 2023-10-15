@@ -8,7 +8,6 @@ const FSoftObjectPath& USPU_SoftPointerUtilsLibrary::SoftClassToSoftPath(const T
 {
 	return SoftClass.ToSoftObjectPath();
 }
-
 const FSoftObjectPath& USPU_SoftPointerUtilsLibrary::SoftObjectToSoftPath(const TSoftObjectPtr<>& SoftObject)
 {
 	return SoftObject.ToSoftObjectPath();
@@ -23,12 +22,10 @@ bool USPU_SoftPointerUtilsLibrary::IsValidSoftClass(const TSoftClassPtr<>& SoftC
 {
 	return !SoftClass.IsNull();
 }
-
 bool USPU_SoftPointerUtilsLibrary::IsValidSoftObject(const TSoftObjectPtr<>& SoftObject)
 {
 	return !SoftObject.IsNull();
 }
-
 bool USPU_SoftPointerUtilsLibrary::IsValidSoftPath(const FSoftObjectPath& SoftPath)
 {
 	return !SoftPath.IsNull();
@@ -38,22 +35,33 @@ bool USPU_SoftPointerUtilsLibrary::IsSoftClassLoaded(const TSoftClassPtr<>& Soft
 {
 	return SoftClass.IsValid();
 }
-
 bool USPU_SoftPointerUtilsLibrary::IsSoftObjectLoaded(const TSoftObjectPtr<>& SoftObject)
 {
 	return SoftObject.IsValid();
 }
 
+void USPU_SoftPointerUtilsLibrary::AsyncLoadClass(const TSoftClassPtr<>& SoftClass, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	AsyncLoadClass(SoftClass, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 void USPU_SoftPointerUtilsLibrary::AsyncLoadClass(const TSoftClassPtr<>& SoftClass, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	return AsyncLoadPath(SoftClass.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
 }
 
+void USPU_SoftPointerUtilsLibrary::AsyncLoadObject(const TSoftObjectPtr<>& SoftObject, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	AsyncLoadObject(SoftObject, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 void USPU_SoftPointerUtilsLibrary::AsyncLoadObject(const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	return AsyncLoadPath(SoftObject.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
 }
 
+void USPU_SoftPointerUtilsLibrary::AsyncLoadPath(const FSoftObjectPath& SoftPath, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	AsyncLoadPath(SoftPath, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 void USPU_SoftPointerUtilsLibrary::AsyncLoadPath(const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
@@ -63,6 +71,20 @@ void USPU_SoftPointerUtilsLibrary::AsyncLoadPath(const FSoftObjectPath& SoftPath
 	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPath, MoveTemp(OnLoaded), LoadPriority, false, false, MoveTemp(DebugName));
 }
 
+void USPU_SoftPointerUtilsLibrary::AsyncLoadClasses(const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	AsyncLoadClasses(SoftClasses, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
+
+void USPU_SoftPointerUtilsLibrary::AsyncLoadObjects(const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	AsyncLoadObjects(SoftObjects, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
+
+void USPU_SoftPointerUtilsLibrary::AsyncLoadPaths(const TArray<FSoftObjectPath>& SoftPaths, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	AsyncLoadPaths(SoftPaths, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 void USPU_SoftPointerUtilsLibrary::AsyncLoadPaths(TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	bool ContainsValidPath = false;
@@ -79,16 +101,28 @@ void USPU_SoftPointerUtilsLibrary::AsyncLoadPaths(TArray<FSoftObjectPath> SoftPa
 	UAssetManager::GetStreamableManager().RequestAsyncLoad(MoveTemp(SoftPaths), MoveTemp(OnLoaded), LoadPriority, false, false, MoveTemp(DebugName));
 }
 
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadClassWithHandle(UObject* Outer, const TSoftClassPtr<>& SoftClass, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return AsyncLoadClassWithHandle(Outer, SoftClass, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadClassWithHandle(UObject* Outer, const TSoftClassPtr<>& SoftClass, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	return AsyncLoadPathWithHandle(Outer, SoftClass.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
 }
 
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadObjectWithHandle(UObject* Outer, const TSoftObjectPtr<>& SoftObject, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return AsyncLoadObjectWithHandle(Outer, SoftObject, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadObjectWithHandle(UObject* Outer, const TSoftObjectPtr<>& SoftObject, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	return AsyncLoadPathWithHandle(Outer, SoftObject.ToSoftObjectPath(), MoveTemp(OnLoaded), bIsHighPriority, MoveTemp(DebugName));
 }
 
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathWithHandle(UObject* Outer, const FSoftObjectPath& SoftPath, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return AsyncLoadPathWithHandle(Outer, SoftPath, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathWithHandle(UObject* Outer, const FSoftObjectPath& SoftPath, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	if (!ensureAlwaysMsgf(IsValidSoftPath(SoftPath), TEXT("Cannot load an invalid soft path!")))
@@ -107,6 +141,20 @@ USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathWithHandle(UObj
 	return LoadHandle;
 }
 
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadClassesWithHandle(UObject* Outer, const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return AsyncLoadClassesWithHandle(Outer, SoftClasses, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadObjectsWithHandle(UObject* Outer, const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return AsyncLoadObjectsWithHandle(Outer, SoftObjects, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
+
+USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathsWithHandle(UObject* Outer, const TArray<FSoftObjectPath>& SoftPaths, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
+{
+	return AsyncLoadPathsWithHandle(Outer, SoftPaths, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
+}
 USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathsWithHandle(UObject* Outer, TArray<FSoftObjectPath> SoftPaths, FSPU_AsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
 {
 	bool ContainsValidPath = false;
@@ -130,64 +178,4 @@ USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathsWithHandle(UOb
 
 	LoadHandle->Initialize(StreamableHandle);
 	return LoadHandle;
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadClass(const TSoftClassPtr<>& SoftClass, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	AsyncLoadClass(SoftClass, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadObject(const TSoftObjectPtr<>& SoftObject, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	AsyncLoadObject(SoftObject, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadPath(const FSoftObjectPath& SoftPath, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	AsyncLoadPath(SoftPath, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadClasses(const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	AsyncLoadClasses(SoftClasses, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadObjects(const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	AsyncLoadObjects(SoftObjects, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-void USPU_SoftPointerUtilsLibrary::AsyncLoadPaths(const TArray<FSoftObjectPath>& SoftPaths, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	AsyncLoadPaths(SoftPaths, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadClassWithHandle(UObject* Outer, const TSoftClassPtr<>& SoftClass, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	return AsyncLoadClassWithHandle(Outer, SoftClass, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadObjectWithHandle(UObject* Outer, const TSoftObjectPtr<>& SoftObject, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	return AsyncLoadObjectWithHandle(Outer, SoftObject, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathWithHandle(UObject* Outer, const FSoftObjectPath& SoftPath, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	return AsyncLoadPathWithHandle(Outer, SoftPath, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadClassesWithHandle(UObject* Outer, const TArray<TSoftClassPtr<>>& SoftClasses, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	return AsyncLoadClassesWithHandle(Outer, SoftClasses, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadObjectsWithHandle(UObject* Outer, const TArray<TSoftObjectPtr<>>& SoftObjects, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	return AsyncLoadObjectsWithHandle(Outer, SoftObjects, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
-}
-
-USPU_AsyncLoadHandle* USPU_SoftPointerUtilsLibrary::AsyncLoadPathsWithHandle(UObject* Outer, const TArray<FSoftObjectPath>& SoftPaths, FSPU_DynamicAsyncLoadDelegate OnLoaded, const bool bIsHighPriority, FString DebugName)
-{
-	return AsyncLoadPathsWithHandle(Outer, SoftPaths, FSPU_AsyncLoadDelegate::CreateLambda([OnLoaded]{OnLoaded.ExecuteIfBound();}), bIsHighPriority, MoveTemp(DebugName));
 }

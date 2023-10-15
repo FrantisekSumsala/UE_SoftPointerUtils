@@ -8,6 +8,7 @@
 
 struct FStreamableHandle;
 
+/** Enum representing the status of an async load request. */
 UENUM(BlueprintType)
 enum class ESPU_AsyncLoadStatus : uint8
 {
@@ -20,6 +21,12 @@ enum class ESPU_AsyncLoadStatus : uint8
 
 DECLARE_DYNAMIC_DELEGATE(FSPU_AsyncLoadHandleDelegate);
 
+/**
+ * Handle managing an async load request, allowing to query its status and progress, force a synchronous completion
+ * or to cancel the load request entirely.
+ * Note: Functions as an UObject-based wrapper around the low level FStreamableHandle that is returned by the streaming
+ * manager that offers a simplified API.
+ */
 UCLASS(BlueprintType)
 class SOFTPOINTERUTILS_API USPU_AsyncLoadHandle final : public UObject
 {
@@ -37,43 +44,53 @@ private:
 	FSPU_AsyncLoadHandleDelegate OnCancelDelegate;
 
 public:
+	/**
+	 * Returns the status of the async load request.
+	 * @return ESPU_AsyncLoadStatus enum value representing the status of the load request.
+	 */
 	UFUNCTION(BlueprintPure)
 	ESPU_AsyncLoadStatus GetStatus() const;
 
+	/**
+	 * Returns the progress of the load request.
+	 * @return The load progress normalized to range from 0 to 1.
+	 */
 	UFUNCTION(BlueprintPure)
 	float GetProgress() const;
-	// GetProgress
-	
+
+	/**
+	 * Sets the delegate callback that will be executed once the load request managed by this handle is completed.
+	 * @param Delegate The delegate to be called when the load request is completed.
+	 * @return Whether the binding was successful - can only be done when the load is in progress. 
+	 */
 	UFUNCTION(BlueprintCallable)
 	bool BindOnCompleteDelegate(const FSPU_AsyncLoadHandleDelegate& Delegate);
-	// BindCompleteDelegate
 
+	/**
+	 * Sets the delegate callback that will be executed if the load request managed by this handle is cancelled.
+	 * @param Delegate The delegate to be called when the load request is cancelled.
+	 * @return Whether the binding was successful - can only be done when the load is in progress. 
+	 */
 	UFUNCTION(BlueprintCallable)
 	bool BindOnCancelDelegate(const FSPU_AsyncLoadHandleDelegate& Delegate);
-	// BindCancelDelegate
-	
+
+	/**
+	 * Finishes the load request synchronously without flushing other async loads. 
+	 * @param Timeout The maximum amount of time in seconds that this action can take. If set to 0, this limit is infinite.
+	 */
 	UFUNCTION(BlueprintCallable)
-	void ForceLoad(const float Timeout = 0.0f, const bool bStartStalledHandles = true) const;
-	// WaitUntilComplete
-	
+	void ForceLoad(const float Timeout = 0.0f) const;
+
+	/**
+	 * Cancel this load request.
+	 */
 	UFUNCTION(BlueprintCallable)
 	void CancelLoadRequest() const;
-	// CancelHandle
-	
-	//TODO: non-wrapped functions - verify that we have wrapped all relevant functions
-	// - BindUpdateDelegate - could not be bound for some reason and seemed like would not be invoked anyway
-	// - HasUpdateDelegate - pointless without BindUpdateDelegate
-	// - ReleaseHandle - weirder version of CancelHandle, probably more suited for internal purposes and thus redundant
-	// - IsActive - replaced by unifying GetStatus()
-	// - IsLoadingInProgress - replaced by unifying GetStatus()
-	// - IsStalled - replaced by unifying GetStatus()
-	// - HasLoadCompleted - replaced by unifying GetStatus()
-	// - WasCanceled - replaced by unifying GetStatus()
-	// - GetRequestedAssets - seems like intended for internal purposes
-	// - GetLoadedAssets - seems like intended for internal purposes
-	// - HasCompleteDelegate - seems kind of pointless
-	// - HasCancelDelegate - seems kind of pointless
 
+	/**
+	 * Returns the internal FStreamableHandle pointer.
+	 * @return TSharedPtr<FStreamableHandle> managing the low level load request.
+	 */
 	TSharedPtr<FStreamableHandle> GetLoadHandle() const;
 	
 private:
